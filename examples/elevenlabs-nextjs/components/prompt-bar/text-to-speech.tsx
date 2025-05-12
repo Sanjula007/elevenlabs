@@ -156,7 +156,7 @@ export function TextToSpeechPromptBar({
     };
 
     for(const textPart of splitTextByBreakTags(data.text)) {
-      await sleep(2000);
+
       if(!textPart.trim()){
         console.log('empty part',textPart)
       } else if(textPart.includes('<pause')){
@@ -170,6 +170,7 @@ export function TextToSpeechPromptBar({
 
         try {
           setIsGenerating(true);
+          await sleep(2000);
           setGenerationTime(null);
 
           const startTime = performance.now();
