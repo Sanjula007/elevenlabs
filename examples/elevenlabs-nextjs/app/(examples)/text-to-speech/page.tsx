@@ -202,9 +202,9 @@ export default function TextToSpeechPage() {
               </div>
             </div>
             <div>
-              {speeches.map((speech) => (
+              {speeches.map((speech,i) => (
                 <Card
-                  key={speech.id}
+                  key={speech.id+i}
                   className={cn(
                     'hover:bg-accent relative cursor-pointer rounded-none border-0 transition-colors',
                     selectedSpeech?.id === speech.id && 'bg-accent',

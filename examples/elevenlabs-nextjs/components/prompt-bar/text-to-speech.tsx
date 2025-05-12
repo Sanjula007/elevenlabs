@@ -143,14 +143,13 @@ export function TextToSpeechPromptBar({
     }
 
 
-    alert('started')
-
+    await onPause(3);
     const splitTextByBreakTags = (text: string): string[] => {
-      return text.split('<break/>');
+      return text.replace(/(\r\n|\n|\r)/g, '<break/>').split('<break/>');
     };
 
     for(const textPart of splitTextByBreakTags(data.text)) {
-      if(!textPart.trim().replace(/(\r\n|\n|\r)/g, '')){
+      if(!textPart.trim()){
         console.log('empty part',textPart)
       } else if(textPart.includes('<pause')){
         const partString=  textPart.trim().split('.')[1];
