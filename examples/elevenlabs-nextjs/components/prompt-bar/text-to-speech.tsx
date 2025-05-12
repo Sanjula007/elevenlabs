@@ -30,6 +30,7 @@ export type TextToSpeechPromptProps = {
 };
 
 export function TextToSpeechPromptBar({
+  onPause,
   onGenerateStart,
   onGenerateComplete,
 }: TextToSpeechPromptProps) {
@@ -103,42 +104,62 @@ export function TextToSpeechPromptBar({
   };
 
   const handleSubmit = async (data: { text: string }) => {
-    try {
-      setIsGenerating(true);
-      setGenerationTime(null);
+    const splitTextByBreakTags = (text: string): string[] => {
+      return text.split('<break>');
+    };
 
-      const startTime = performance.now();
+    for(const textPart of splitTextByBreakTags(data.text)) {
+      if(textPart.includes('<pause')){
+        const partString=  textPart.trim().split('.')[1];
+        console.log(partString,parseInt(partString))
+        if(parseInt(partString) > 0){
+          await onPause(parseInt(partString));
+        }
+      } else {
 
-      const requestData: TextToSpeechRequest = {
-        text: data.text,
-        model_id: settings.model_id,
-        voice_settings: {
-          stability: settings.stability,
-          similarity_boost: settings.similarity_boost,
-          style: settings.style,
-          speed: settings.speed,
-          use_speaker_boost: settings.use_speaker_boost,
-        },
-      };
 
-      const pendingId = onGenerateStart(data.text);
+        try {
+          setIsGenerating(true);
+          setGenerationTime(null);
 
-      const audioUrl = await speak(settings.voice_id, requestData);
+          const startTime = performance.now();
 
-      const elapsed = performance.now() - startTime;
-      setGenerationTime(elapsed);
+          const requestData: TextToSpeechRequest = {
+            text: textPart,
+            model_id: settings.model_id,
+            voice_settings: {
+              stability: settings.stability,
+              similarity_boost: settings.similarity_boost,
+              style: settings.style,
+              speed: settings.speed,
+              use_speaker_boost: settings.use_speaker_boost,
+            },
+          };
 
-      if (audioUrl) {
-        // Pass the complete URL to the callback
-        onGenerateComplete(pendingId, data.text, audioUrl);
-        toast.success('Generated speech');
+          const pendingId = onGenerateStart(textPart);
+
+          const audioUrl = await speak(settings.voice_id, requestData);
+
+          const elapsed = performance.now() - startTime;
+          setGenerationTime(elapsed);
+
+          if (audioUrl) {
+            // Pass the complete URL to the callback
+            onGenerateComplete(pendingId, textPart, audioUrl);
+            toast.success('Generated speech');
+          }
+        } catch (err) {
+          toast.error(`An unexpected error occurred: ${err}`);
+          setGenerationTime(null);
+        } finally {
+          setIsGenerating(false);
+        }
+
+
       }
-    } catch (err) {
-      toast.error(`An unexpected error occurred: ${err}`);
-      setGenerationTime(null);
-    } finally {
-      setIsGenerating(false);
+
     }
+
   };
 
   function syncFormWithSettings(form: PromptControlsProps<TtsInput>['form']) {
