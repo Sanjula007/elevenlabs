@@ -209,6 +209,7 @@ export function TextToSpeechPromptBar({
       }
 
     }
+    alert('Done');
 
   };
 
