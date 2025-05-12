@@ -104,12 +104,55 @@ export function TextToSpeechPromptBar({
   };
 
   const handleSubmit = async (data: { text: string }) => {
+
+    try {
+      setIsGenerating(true);
+      setGenerationTime(null);
+
+      const startTime = performance.now();
+
+      const requestData: TextToSpeechRequest = {
+        text: '<break time="1.0s" />',
+        model_id: settings.model_id,
+        voice_settings: {
+          stability: settings.stability,
+          similarity_boost: settings.similarity_boost,
+          style: settings.style,
+          speed: settings.speed,
+          use_speaker_boost: settings.use_speaker_boost,
+        },
+      };
+
+      const pendingId = onGenerateStart('<break time="1.0s" />');
+
+      const audioUrl = await speak(settings.voice_id, requestData);
+
+      const elapsed = performance.now() - startTime;
+      setGenerationTime(elapsed);
+
+      if (audioUrl) {
+        // Pass the complete URL to the callback
+        onGenerateComplete(pendingId, '<break time="1.0s" />', audioUrl);
+        toast.success('Generated speech');
+      }
+    } catch (err) {
+      toast.error(`An unexpected error occurred: ${err}`);
+      setGenerationTime(null);
+    } finally {
+      setIsGenerating(false);
+    }
+
+
+    alert('started')
+
     const splitTextByBreakTags = (text: string): string[] => {
       return text.split('<break/>');
     };
 
     for(const textPart of splitTextByBreakTags(data.text)) {
-      if(textPart.includes('<pause')){
+      if(!textPart.trim().replace(/(\r\n|\n|\r)/g, '')){
+        console.log('empty part',textPart)
+      } else if(textPart.includes('<pause')){
         const partString=  textPart.trim().split('.')[1];
         console.log(partString,parseInt(partString))
         if(parseInt(partString) > 0){
@@ -125,7 +168,7 @@ export function TextToSpeechPromptBar({
           const startTime = performance.now();
 
           const requestData: TextToSpeechRequest = {
-            text: textPart,
+            text: textPart.trim().replace(/(\r\n|\n|\r)/g, ''),
             model_id: settings.model_id,
             voice_settings: {
               stability: settings.stability,
@@ -461,7 +504,7 @@ export function TextToSpeechPromptBar({
 }
 
 const FEATURED_VOICES = [
-  { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', accent: 'American' },
+  { id: 'xGDJhCwcqw94ypljc95Z', name: 'Archer', accent: 'American' },
   { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi', accent: 'American' },
   { id: 'IKne3meq5aSn9XLyUdCD', name: 'Adam', accent: 'American' },
   { id: 'pNInz6obpgDQGcFmaJgB', name: 'Nicole', accent: 'American' },
@@ -489,5 +532,5 @@ const DEFAULT_SETTINGS = {
   similarity_boost: 0.75,
   style: 0,
   speed: 1.0,
-  use_speaker_boost: false,
+  use_speaker_boost: true,
 };
