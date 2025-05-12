@@ -103,8 +103,7 @@ export function TextToSpeechPromptBar({
     }));
   };
 
-  const handleSubmit = async (data: { text: string }) => {
-
+  const generateSilence = async () => {
     try {
       setIsGenerating(true);
       setGenerationTime(null);
@@ -141,6 +140,14 @@ export function TextToSpeechPromptBar({
     } finally {
       setIsGenerating(false);
     }
+
+
+
+  }
+
+  const handleSubmit = async (data: { text: string }) => {
+
+
 
 
     await onPause(3);
@@ -243,8 +250,19 @@ export function TextToSpeechPromptBar({
     }
 
     return (
+
       <div className="flex w-full flex-col gap-2">
         <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="flex h-9 min-w-32 items-center gap-1.5 rounded-full bg-white/10 px-3"
+              onClick={generateSilence}
+            >
+              <span className="ml-2">1 sec Silence</span>
+            </Button>
+          </div>
           {/* Voice Selection */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -257,7 +275,8 @@ export function TextToSpeechPromptBar({
                 <span className="mr-2 max-w-[120px] truncate">{voiceName}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="max-h-[400px] overflow-y-auto border border-white/10 bg-[#2B2B2B] text-white">
+            <DropdownMenuContent
+              className="max-h-[400px] overflow-y-auto border border-white/10 bg-[#2B2B2B] text-white">
               <DropdownMenuLabel>Featured Voices</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-white/10" />
               <DropdownMenuGroup>
@@ -325,7 +344,7 @@ export function TextToSpeechPromptBar({
                 onValueChange={(value) =>
                   updateSetting(
                     'model_id',
-                    value as typeof TTS_MODELS.MULTILINGUAL | typeof TTS_MODELS.FLASH
+                    value as typeof TTS_MODELS.MULTILINGUAL | typeof TTS_MODELS.FLASH,
                   )
                 }
               >
