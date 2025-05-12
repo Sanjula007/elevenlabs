@@ -138,3 +138,9 @@ body {
   background-image: radial-gradient(at left top, #6b7280, 50px, #0e0e0e 100%);
   border-style: none;
 }
+
+
+textarea {
+  max-height: 250px;
+  overflow-y: scroll;
+}
