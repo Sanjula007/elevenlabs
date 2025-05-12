@@ -156,6 +156,7 @@ export function TextToSpeechPromptBar({
     };
 
     for(const textPart of splitTextByBreakTags(data.text)) {
+      await sleep(2000);
       if(!textPart.trim()){
         console.log('empty part',textPart)
       } else if(textPart.includes('<pause')){
@@ -520,7 +521,7 @@ export function TextToSpeechPromptBar({
     />
   );
 }
-
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const FEATURED_VOICES = [
   { id: 'xGDJhCwcqw94ypljc95Z', name: 'Archer', accent: 'American' },
   { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi', accent: 'American' },
