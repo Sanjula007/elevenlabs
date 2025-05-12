@@ -152,7 +152,7 @@ export function TextToSpeechPromptBar({
 
     await onPause(3);
     const splitTextByBreakTags = (text: string): string[] => {
-      return text.replace(/(\r\n|\n|\r)/g, '<break/>').split('<break/>');
+      return text.replace(/(\r\n|\n|\r)/g, '<break/>').replace(/,/g, "...").split('<break/>');
     };
 
     for(const textPart of splitTextByBreakTags(data.text)) {
@@ -552,6 +552,6 @@ const DEFAULT_SETTINGS = {
   stability: 0.5,
   similarity_boost: 0.75,
   style: 0,
-  speed: 1.0,
+  speed: 0.95,
   use_speaker_boost: true,
 };
