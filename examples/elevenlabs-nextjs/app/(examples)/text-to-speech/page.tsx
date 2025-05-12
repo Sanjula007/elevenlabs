@@ -19,7 +19,7 @@ export default function TextToSpeechPage() {
   const [selectedSpeech, setSelectedSpeech] = useState<GeneratedSpeech | null>(null);
   const [autoplay, setAutoplay] = useState(true);
   const [oneSecSpeech, setOneSecSpeech] = useState<GeneratedSpeech | null>(null);
-
+  const [title, setTitle] = useState('');
   const handlePause = async (seconds) => {
 
     const pendingSpeech: GeneratedSpeech = {
@@ -149,7 +149,7 @@ export default function TextToSpeechPage() {
       const url = URL.createObjectURL(combinedBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'combined-audio.mp3';
+      a.download = (title?title:'audio')+'.mp3';
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -164,6 +164,20 @@ export default function TextToSpeechPage() {
         <div className="grid h-[600px] grid-cols-[1fr_auto_300px]">
           <div className="bg-card flex flex-col rounded-lg p-6">
             <h1 className="text-2xl font-bold">Text to speech</h1>
+            <input
+              id="title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter title..."
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <button
+              onClick={handleCombineAndDownload}
+              className="mt-4 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+            >
+              Combine, and Download
+            </button>
             <div className="flex flex-1 flex-col justify-center">
               {selectedSpeech ? (
                 <div className="space-y-4">
@@ -185,12 +199,7 @@ export default function TextToSpeechPage() {
           </div>
 
           <Separator orientation="vertical" className="h-full" />
-          <button
-            onClick={handleCombineAndDownload}
-            className="mt-4 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-          >
-            Combine, Preview, and Download
-          </button>
+
           <ScrollArea className="h-[600px] overflow-hidden rounded-tr-lg">
             <div className="flex items-center justify-between border-b p-3">
               <h2 className="font-semibold">Generations</h2>
