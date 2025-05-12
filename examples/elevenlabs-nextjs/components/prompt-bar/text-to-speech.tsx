@@ -105,7 +105,7 @@ export function TextToSpeechPromptBar({
 
   const handleSubmit = async (data: { text: string }) => {
     const splitTextByBreakTags = (text: string): string[] => {
-      return text.split('<break>');
+      return text.split('<break/>');
     };
 
     for(const textPart of splitTextByBreakTags(data.text)) {
