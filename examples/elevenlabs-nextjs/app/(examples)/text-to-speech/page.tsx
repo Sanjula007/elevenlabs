@@ -13,6 +13,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+import { TextToSpeechRequest } from 'elevenlabs/api';
+import { TTS_MODELS } from '@/lib/schemas';
+import { useSpeech } from '@/hooks/use-speech';
+import { undefined } from 'zod';
 
 export default function TextToSpeechPage() {
   const [speeches, setSpeeches] = useState<GeneratedSpeech[]>([]);
@@ -20,6 +24,22 @@ export default function TextToSpeechPage() {
   const [autoplay, setAutoplay] = useState(true);
   const [oneSecSpeech, setOneSecSpeech] = useState<GeneratedSpeech | null>(null);
   const [title, setTitle] = useState('');
+  const [settings, setSettings] = useState<{
+    voice_id: string;
+    model_id: typeof TTS_MODELS.MULTILINGUAL | typeof TTS_MODELS.FLASH;
+    stability: number;
+    similarity_boost: number;
+    style: number;
+    speed: number;
+    use_speaker_boost: boolean;
+  } | null>(null);
+  const {
+    speak,
+    isLoading: isSpeaking,
+    error,
+  } = useSpeech({
+    onError: (errorMessage) => toast.error(errorMessage),
+  });
   const handlePause = async (seconds) => {
 
     const pendingSpeech: GeneratedSpeech = {
@@ -36,6 +56,7 @@ export default function TextToSpeechPage() {
 
 
   };
+  const speechToDisplay = speeches.filter(speech => speech.text !== '<pause>');
   const handleGenerateStart = (text: string) => {
     console.log(text);
     const pendingSpeech: GeneratedSpeech = {
@@ -98,6 +119,53 @@ export default function TextToSpeechPage() {
     );
   };
 
+  const handleSettingsChange = (upSettings =>{
+    setSettings(upSettings)
+  })
+  const regenerate = async ()=>{
+    if(isSpeaking){
+      alert('generating')
+      return
+    }
+
+    if (selectedSpeech) {
+      const pendingSpeech: GeneratedSpeech = {
+        id: nanoid(),
+        text: selectedSpeech.text,
+        audioBase64: '',
+        createdAt: new Date(),
+        status: 'loading',
+      };
+      if(!settings){
+        alert('no settings')
+        return
+      }
+
+      setSpeeches((prev) =>
+        prev.map((item) => (item.id === selectedSpeech.id ? pendingSpeech : item)),
+      );
+      const requestData: TextToSpeechRequest = {
+        text: selectedSpeech.text,
+        model_id: settings.model_id,
+        voice_settings: {
+          stability: settings.stability,
+          similarity_boost: settings.similarity_boost,
+          style: settings.style,
+          speed: settings.speed,
+          use_speaker_boost: settings.use_speaker_boost,
+        },
+      };
+
+      pendingSpeech.audioBase64 = await speak(settings.voice_id, requestData) || '';
+      pendingSpeech.status = 'complete'
+
+
+      setSpeeches((prev) =>
+        prev.map((item) => (item.id === selectedSpeech.id ? pendingSpeech : item)),
+      );
+      setSelectedSpeech(pendingSpeech);
+    }
+  }
   const handleCombineAndDownload = useCallback(async () => {
     const allSpeeches = speeches.map(speech => {
       console.log(oneSecSpeech)
@@ -182,7 +250,25 @@ export default function TextToSpeechPage() {
               {selectedSpeech ? (
                 <div className="space-y-4">
                   {selectedSpeech.status === 'complete' && (
-                    <p className="text-muted-foreground text-sm">{selectedSpeech.text}</p>
+                    <div>
+                      <p className="text-muted-foreground text-sm">{selectedSpeech.text}</p>
+                      <textarea
+                        id="notes"
+                        value={selectedSpeech.text}
+                        onChange={(e) => setSelectedSpeech({
+                          audioBase64: '',
+                          createdAt: undefined,
+                          id: '',
+                          status: undefined,
+                          ...selectedSpeech,
+                          text: e.target.value})}
+                        rows={4}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Type something..."
+                      />
+                      <button  className="mt-4 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600" onClick={regenerate}> Regenerate</button>
+                    </div>
+
                   )}
                   {selectedSpeech.status === 'loading' ? (
                     <div className="flex items-center justify-center p-8">
@@ -211,7 +297,7 @@ export default function TextToSpeechPage() {
               </div>
             </div>
             <div>
-              {speeches.map((speech,i) => (
+              {speechToDisplay.map((speech,i) => (
                 <Card
                   key={speech.id+i}
                   className={cn(
@@ -220,7 +306,8 @@ export default function TextToSpeechPage() {
                     speech.status === 'loading' &&
                     'cursor-not-allowed opacity-70 hover:bg-transparent',
                   )}
-                  onClick={() => speech.status === 'complete' && setSelectedSpeech(speech)}
+
+                  onClick={() => speech.status === 'complete' && !isSpeaking && setSelectedSpeech(speech)}
                 >
                   <CardContent className="px-3 py-3">
                     <p className="mb-1 max-w-[250px] truncate font-medium">{speech.text}</p>
@@ -255,6 +342,7 @@ export default function TextToSpeechPage() {
             onGenerateStart={handleGenerateStart}
             onGenerateComplete={handleGenerateComplete}
             onPause={handlePause}
+            onSettingsChange={handleSettingsChange}
           />
         </div>
       </div>

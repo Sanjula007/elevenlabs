@@ -26,10 +26,21 @@ import { TtsInput, ttsSchema, TTS_MODELS } from '@/lib/schemas';
 
 export type TextToSpeechPromptProps = {
   onGenerateStart: (text: string) => string;
+  onPause: (number: number) => string;
+  onSettingsChange: (any:any) => {
+    voice_id: string;
+    model_id: typeof TTS_MODELS.MULTILINGUAL | typeof TTS_MODELS.FLASH;
+    stability: number;
+    similarity_boost: number;
+    style: number;
+    speed: number;
+    use_speaker_boost: boolean;
+  };
   onGenerateComplete: (id: string, text: string, audioUrl: string) => void;
 };
 
 export function TextToSpeechPromptBar({
+  onSettingsChange,
   onPause,
   onGenerateStart,
   onGenerateComplete,
@@ -84,6 +95,7 @@ export function TextToSpeechPromptBar({
     }
 
     loadVoices();
+    onSettingsChange(settings || DEFAULT_SETTINGS);
   }, []);
 
   const getVoiceName = (voiceId: string): string => {
@@ -97,10 +109,15 @@ export function TextToSpeechPromptBar({
   };
 
   const updateSetting = <K extends keyof typeof settings>(key: K, value: (typeof settings)[K]) => {
+
     setSettings((prev) => ({
       ...prev,
       [key]: value,
     }));
+
+    if(onSettingsChange){
+      onSettingsChange(settings || DEFAULT_SETTINGS);
+    }
   };
 
   const generateSilence = async () => {
