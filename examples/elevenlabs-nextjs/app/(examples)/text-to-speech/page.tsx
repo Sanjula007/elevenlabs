@@ -24,6 +24,7 @@ export default function TextToSpeechPage() {
   const [autoplay, setAutoplay] = useState(true);
   const [oneSecSpeech, setOneSecSpeech] = useState<GeneratedSpeech | null>(null);
   const [title, setTitle] = useState('');
+  const [combinedAudio, setCombinedAudio] = useState('');
   const [settings, setSettings] = useState<{
     voice_id: string;
     model_id: typeof TTS_MODELS.MULTILINGUAL | typeof TTS_MODELS.FLASH;
@@ -217,9 +218,10 @@ export default function TextToSpeechPage() {
       const url = URL.createObjectURL(combinedBlob);
       const a = document.createElement('a');
       a.href = url;
+      setCombinedAudio(url);
       a.download = (title?title:'audio')+'.mp3';
       a.click();
-      URL.revokeObjectURL(url);
+     // URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Error combining and downloading audio:', err);
     }
@@ -246,6 +248,13 @@ export default function TextToSpeechPage() {
             >
               Combine, and Download
             </button>
+            {
+              combinedAudio && (
+                <audio controls autoPlay={true} src={combinedAudio}>
+
+                </audio>
+              )
+            }
             <div className="flex flex-1 flex-col justify-center">
               {selectedSpeech ? (
                 <div className="space-y-4">
