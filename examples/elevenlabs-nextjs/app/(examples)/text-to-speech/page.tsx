@@ -37,7 +37,6 @@ export default function TextToSpeechPage() {
   const {
     speak,
     isLoading: isSpeaking,
-    error,
   } = useSpeech({
     onError: (errorMessage) => toast.error(errorMessage),
   });
@@ -209,6 +208,9 @@ export default function TextToSpeechPage() {
       // Step 1: Fetch all blobs
       const blobs = await Promise.all(
         audioUrls.map(async (url) => {
+          if(!url){
+            return
+          }
           console.log(`Fetching audio from URL: ${url}`);
           const response = await fetch(url);
           return await response.blob();
