@@ -57,6 +57,23 @@ export default function TextToSpeechPage() {
 
 
   };
+  const onsSelectedAudioEnd = () => {
+
+    if(!autoplay){
+      return
+    }
+    // play next audio
+    const currentIndex = speechToDisplay.findIndex(speech => speech.id === selectedSpeech?.id);
+    const nextSpeech = speechToDisplay[currentIndex - 1];
+    if (nextSpeech) {
+
+      setSelectedSpeech(nextSpeech);
+      if(nextSpeech.text.includes('<pause')){
+        onsSelectedAudioEnd()
+      }
+    }
+  }
+  
   const speechToDisplay = speeches.filter(speech => speech.text !== '<pause>');
   const handleGenerateStart = (text: string) => {
     console.log(text);
@@ -284,7 +301,7 @@ export default function TextToSpeechPage() {
                       <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-white" />
                     </div>
                   ) : selectedSpeech.audioBase64 ? (
-                    <AudioPlayer audioBase64={selectedSpeech.audioBase64} autoplay={autoplay} />
+                    <AudioPlayer audioBase64={selectedSpeech.audioBase64} autoplay={autoplay} onAudioEnd={onsSelectedAudioEnd} />
                   ) : null}
                 </div>
               ) : (

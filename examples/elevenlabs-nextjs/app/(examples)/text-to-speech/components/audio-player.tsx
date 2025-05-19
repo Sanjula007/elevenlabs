@@ -8,9 +8,10 @@ interface AudioPlayerProps {
   audioBase64: string;
   autoplay?: boolean;
   className?: string;
+  onAudioEnd?: () => void; // Callback for when audio ends
 }
 
-export function AudioPlayer({ audioBase64, autoplay = true, className }: AudioPlayerProps) {
+export function AudioPlayer({ audioBase64, autoplay = true, className, onAudioEnd }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,12 +48,19 @@ export function AudioPlayer({ audioBase64, autoplay = true, className }: AudioPl
             });
           }
         }
+
+        // Attach the onended event listener
+        audio.onended = () => {
+          if (onAudioEnd) {
+            onAudioEnd();
+          }
+        };
       } catch (err) {
         console.error('Error setting audio source:', err);
         setError('Error loading audio');
       }
     }
-  }, [audioBase64, autoplay]);
+  }, [audioBase64, autoplay, onAudioEnd]);
 
   return (
     <div className={cn('flex w-full flex-col items-center space-y-2', className)}>
