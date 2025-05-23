@@ -32,5 +32,8 @@
     "openapi-format": "^1.25.0",
     "prettier": "3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1"
   }
 }

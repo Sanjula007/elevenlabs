@@ -1,5 +1,5 @@
 'use client';
-
+import JSZip from 'jszip';
 import { formatDistanceToNow } from 'date-fns';
 import { nanoid } from 'nanoid';
 import Image from 'next/image';
@@ -183,9 +183,10 @@ export default function TextToSpeechPage() {
       setSelectedSpeech(pendingSpeech);
     }
   }
+
+
   const handleCombineAndDownload = useCallback(async () => {
-    const allSpeeches = speeches.map(speech => {
-      console.log(oneSecSpeech)
+    const allSpeeches = speeches.map((speech) => {
       if (speech.text.includes('<pause>')) {
         return {
           ...speech,
@@ -193,9 +194,8 @@ export default function TextToSpeechPage() {
         };
       }
       return speech;
-
     });
-    // Filter completed speeches and combine their audioBase64 data
+
     const completedSpeeches = allSpeeches.filter((speech) => speech.status === 'complete');
     if (completedSpeeches.length === 0) {
       toast.error('No completed speeches to combine');
@@ -203,24 +203,34 @@ export default function TextToSpeechPage() {
     }
 
     const audioUrls = completedSpeeches.map((speech) => speech.audioBase64).reverse();
-    console.log(audioUrls)
+    const zip = new JSZip();
+
     try {
-      // Step 1: Fetch all blobs
+      // Step 1: Add text files to the ZIP
+      completedSpeeches.forEach((speech, index) => {
+        zip.file(`clip-${index + 1}.txt`, speech.text);
+      });
+
+      // Step 2: Fetch all blobs and add them to the ZIP
+      await Promise.all(
+        audioUrls.map(async (url, index) => {
+          if (!url) return;
+          const response = await fetch(url);
+          const blob = await response.blob();
+          zip.file(`clip-${index + 1}.mp3`, blob);
+        }),
+      );
+
+      // Step 3: Combine audio files
       const blobs = await Promise.all(
         audioUrls.map(async (url) => {
-          if(!url){
-            return
-          }
-          console.log(`Fetching audio from URL: ${url}`);
+          if (!url) return;
           const response = await fetch(url);
           return await response.blob();
         }),
       );
-
-      // Step 2: Convert all blobs to ArrayBuffers
-      const buffers = await Promise.all(blobs.map(blob => blob.arrayBuffer()));
-
-      // Step 3: Concatenate ArrayBuffers
+      const activeBlobs = blobs.filter((blob) =>!! blob );
+      const buffers = await Promise.all(activeBlobs.map((blob) => blob.arrayBuffer()));
       const totalLength = buffers.reduce((sum, buffer) => sum + buffer.byteLength, 0);
       const combinedBuffer = new Uint8Array(totalLength);
 
@@ -230,22 +240,21 @@ export default function TextToSpeechPage() {
         offset += buffer.byteLength;
       }
 
-      // Step 4: Create final Blob
       const combinedBlob = new Blob([combinedBuffer], { type: 'audio/mpeg' });
+      zip.file(`${title || 'combined-audio'}.mp3`, combinedBlob);
 
-      // Step 5: Create download link
-      const url = URL.createObjectURL(combinedBlob);
+      // Step 4: Generate ZIP and trigger download
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const zipUrl = URL.createObjectURL(zipBlob);
       const a = document.createElement('a');
-      a.href = url;
-      setCombinedAudio(url);
-      a.download = (title?title:'audio')+'.mp3';
+      a.href = zipUrl;
+      a.download = `${title || 'audio-clips'}.zip`;
       a.click();
-     // URL.revokeObjectURL(url);
+      URL.revokeObjectURL(zipUrl);
     } catch (err) {
       console.error('Error combining and downloading audio:', err);
     }
-  }, [speeches]);
-
+  }, [speeches, oneSecSpeech, title]);
 
   return (
     <div>
