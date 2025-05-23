@@ -229,7 +229,7 @@ export default function TextToSpeechPage() {
           return await response.blob();
         }),
       );
-      const activeBlobs = blobs.filter((blob) =>!! blob );
+      const activeBlobs = blobs.filter((blob) => !!blob);
       const buffers = await Promise.all(activeBlobs.map((blob) => blob.arrayBuffer()));
       const totalLength = buffers.reduce((sum, buffer) => sum + buffer.byteLength, 0);
       const combinedBuffer = new Uint8Array(totalLength);
@@ -251,6 +251,10 @@ export default function TextToSpeechPage() {
       a.download = `${title || 'audio-clips'}.zip`;
       a.click();
       URL.revokeObjectURL(zipUrl);
+
+      // Step 5: Set combined audio for playback
+      const combinedAudioUrl = URL.createObjectURL(combinedBlob);
+      setCombinedAudio(combinedAudioUrl);
     } catch (err) {
       console.error('Error combining and downloading audio:', err);
     }
