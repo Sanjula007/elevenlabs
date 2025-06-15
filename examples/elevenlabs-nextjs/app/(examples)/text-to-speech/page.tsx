@@ -373,11 +373,7 @@ export default function TextToSpeechPage() {
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4">
-        <button onClick={() => {
-          handlePause(1);
-        }}>add Pause
-        </button>
+      <div className=" bottom-0 left-0 right-0 p-4">
         <div className="mx-auto max-w-4xl">
           <TextToSpeechPromptBar
             onGenerateStart={handleGenerateStart}
