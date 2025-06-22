@@ -83,7 +83,7 @@ export default function TextToSpeechPage() {
       createdAt: new Date(),
       status: 'loading',
     };
-    if (text.includes('<break time="1.0s" />')) {
+    if (text.trim() === '<break time="1.0s" />' ) {
       console.log('one sec speech');
       setOneSecSpeech({ ...pendingSpeech, status: 'complete' });
     }
@@ -101,7 +101,7 @@ export default function TextToSpeechPage() {
       );
       return;
     }
-    if (text.includes('<break time="1.0s" />') ) {
+    if (text.trim() === '<break time="1.0s" />'  ) {
       setOneSecSpeech({ ...{
           id: nanoid(),
           text,
@@ -230,12 +230,14 @@ export default function TextToSpeechPage() {
         }),
       );
       const activeBlobs = blobs.filter((blob) => !!blob);
+      console.log('activeBlobs', activeBlobs);
       const buffers = await Promise.all(activeBlobs.map((blob) => blob.arrayBuffer()));
       const totalLength = buffers.reduce((sum, buffer) => sum + buffer.byteLength, 0);
       const combinedBuffer = new Uint8Array(totalLength);
 
       let offset = 0;
       for (const buffer of buffers) {
+        console.log(buffer,offset)
         combinedBuffer.set(new Uint8Array(buffer), offset);
         offset += buffer.byteLength;
       }
