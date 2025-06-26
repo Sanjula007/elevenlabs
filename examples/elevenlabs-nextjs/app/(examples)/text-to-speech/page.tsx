@@ -207,10 +207,10 @@ export default function TextToSpeechPage() {
 
     try {
       // Step 1: Add text files to the ZIP
-      completedSpeeches.forEach((speech, index) => {
+      (completedSpeeches.reverse()).forEach((speech, index) => {
         zip.file(`clip-${index + 1}.txt`, speech.text);
       });
-      zip.file(`${title || 'combined-audio'}.txt`, completedSpeeches.map(speech => speech.text).join('\n'));
+      zip.file(`${title || 'combined-audio'}.txt`, (completedSpeeches.reverse()).map(speech => speech.text).join('\n'));
       // Step 2: Fetch all blobs and add them to the ZIP
       await Promise.all(
         audioUrls.map(async (url, index) => {
@@ -330,7 +330,7 @@ export default function TextToSpeechPage() {
           <Separator orientation="vertical" className="h-full" />
 
           <ScrollArea className="h-[600px] overflow-hidden rounded-tr-lg relative">
-            <div className="fixed top-0 right-0 left-0 top-0 flex items-center justify-between border-b p-3">
+            <div className="sticky top-0 right-0 left-0 top-0 flex items-center justify-between border-b p-3">
               <h2 className="font-semibold">Generations</h2>
               <div className="flex items-center gap-2">
                 <label htmlFor="autoplay" className="text-sm">
