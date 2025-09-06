@@ -57,7 +57,20 @@ export function TextToSpeechPromptBar({
     style: number;
     speed: number;
     use_speaker_boost: boolean;
-  }>(DEFAULT_SETTINGS);
+  }>(() => {
+    // Try to load settings from localStorage on initial render
+    if (typeof window !== 'undefined') {
+      const savedSettings = localStorage.getItem('tts-settings');
+      if (savedSettings) {
+        try {
+          return JSON.parse(savedSettings);
+        } catch (e) {
+          console.error('Failed to parse settings from localStorage:', e);
+        }
+      }
+    }
+    return DEFAULT_SETTINGS;
+  });
 
   const {
     speak,
@@ -109,11 +122,19 @@ export function TextToSpeechPromptBar({
   };
 
   const updateSetting = <K extends keyof typeof settings>(key: K, value: (typeof settings)[K]) => {
-
-    setSettings((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setSettings((prev) => {
+      const newSettings = {
+        ...prev,
+        [key]: value,
+      };
+      
+      // Save to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('tts-settings', JSON.stringify(newSettings));
+      }
+      
+      return newSettings;
+    });
 
     if(onSettingsChange){
       onSettingsChange(settings || DEFAULT_SETTINGS);
