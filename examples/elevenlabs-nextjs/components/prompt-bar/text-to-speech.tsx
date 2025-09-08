@@ -564,7 +564,7 @@ export function TextToSpeechPromptBar({
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const FEATURED_VOICES = [
   { id: 'xGDJhCwcqw94ypljc95Z', name: 'Archer', accent: 'American' },
-  { id: 'IsEXLHzSvLH9UMB6SLHjZ', name: 'Mellow Matt', accent: 'American' },
+  { id: 'IsEXLHzSvLH9UMB6SLHj', name: 'Mellow Matt', accent: 'American' },
   { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi', accent: 'American' },
   { id: 'IKne3meq5aSn9XLyUdCD', name: 'Adam', accent: 'American' },
   { id: 'pNInz6obpgDQGcFmaJgB', name: 'Nicole', accent: 'American' },
