@@ -168,8 +168,12 @@ export function TextToSpeechPromptBar({
       setGenerationTime(elapsed);
 
       if (audioUrl) {
+        console.log(audioUrl)
         // Pass the complete URL to the callback
-        onGenerateComplete(pendingId, '<break time="1.0s" />', audioUrl);
+        const res = await fetch("/1sec_silence.mp3");
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        onGenerateComplete(pendingId, '<break time="1.0s" />', url);
         toast.success('Generated speech');
       }
     } catch (err) {
